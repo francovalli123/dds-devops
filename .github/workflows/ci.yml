@@ -1,4 +1,4 @@
-name: CI - Docker y GHCR
+nname: CI - Docker y GHCR
 
 on:
   push:
@@ -17,11 +17,14 @@ jobs:
       - name: Obtener codigo
         uses: actions/checkout@v4
 
-      - name: Definir nombre de imagen
+      - name: Definir nombres de imagen
         id: image
         shell: bash
         run: |
-          echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          # Nombre para GHCR (en minúsculas)
+          echo "ghcr_name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          # Nombre para Docker Hub (
+          echo "dockerhub_name=francovalli/devops-dds" >> "$GITHUB_OUTPUT"
 
       - name: Construir imagen Docker
         run: docker build -t dds-devops-demo:test .
@@ -48,12 +51,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Etiquetar imagen
-        run: |
-          docker tag dds-devops-demo:test \
-            ${{ steps.image.outputs.name }}:${GITHUB_SHA::7}
+      - name: Autenticarse en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Publicar imagen en GHCR
+      - name: Etiquetar imágenes para GHCR
         run: |
-          docker push \
-            ${{ steps.image.outputs.name }}:${GITHUB_SHA::7}
+          IMAGE_GHCR="${{ steps.image.outputs.ghcr_name }}"
+          COMMIT_TAG="${GITHUB_SHA::7}"
+          
+          docker tag dds-devops-demo:test "$IMAGE_GHCR:$COMMIT_TAG"
+          docker tag dds-devops-demo:test "$IMAGE_GHCR:latest"
+
+      - name: Etiquetar imágenes para Docker Hub
+        run: |
+          IMAGE_DH="${{ steps.image.outputs.dockerhub_name }}"
+          COMMIT_TAG="${GITHUB_SHA::7}"
+          
+          docker tag dds-devops-demo:test "$IMAGE_DH:$COMMIT_TAG"
+          docker tag dds-devops-demo:test "$IMAGE_DH:latest"
+
+      - name: Publicar imágenes en GHCR
+        run: |
+          IMAGE_GHCR="${{ steps.image.outputs.ghcr_name }}"
+          COMMIT_TAG="${GITHUB_SHA::7}"
+          
+          docker push "$IMAGE_GHCR:$COMMIT_TAG"
+          docker push "$IMAGE_GHCR:latest"
+
+      - name: Publicar imágenes en Docker Hub
+        run: |
+          IMAGE_DH="${{ steps.image.outputs.dockerhub_name }}"
+          COMMIT_TAG="${GITHUB_SHA::7}"
+          
+          docker push "$IMAGE_DH:$COMMIT_TAG"
+          docker push "$IMAGE_DH:latest"
