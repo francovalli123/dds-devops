@@ -1,4 +1,4 @@
-nname: CI - Docker y GHCR
+name: CI - Docker y GHCR
 
 on:
   push:
