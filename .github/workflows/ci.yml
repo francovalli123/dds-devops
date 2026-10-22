@@ -88,3 +88,4 @@ jobs:
           
           docker push "$IMAGE_DH:$COMMIT_TAG"
           docker push "$IMAGE_DH:latest"
+          
