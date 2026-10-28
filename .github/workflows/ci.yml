@@ -90,10 +90,10 @@ jobs:
           docker push "$IMAGE_DH:latest"
 
       - name: Disparar despliegue en Render
-              run: |
-                RENDER_URL="${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-                if [ -z "$RENDER_URL" ]; then
-                  echo "Error: La variable RENDER_DEPLOY_HOOK_URL no está configurada."
-                  exit 1
-                fi
-                curl -X POST "$RENDER_URL"
+        run: |
+          RENDER_URL="${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          if [ -z "$RENDER_URL" ]; then
+            echo "Error: La variable RENDER_DEPLOY_HOOK_URL no está configurada."
+            exit 1
+          fi
+          curl -X POST "$RENDER_URL"
