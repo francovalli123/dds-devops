@@ -23,7 +23,7 @@ jobs:
         run: |
           # Nombre para GHCR (en minúsculas)
           echo "ghcr_name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
-          # Nombre para Docker Hub (
+          # Nombre para Docker Hub
           echo "dockerhub_name=francovalli/devops-dds" >> "$GITHUB_OUTPUT"
 
       - name: Construir imagen Docker
@@ -88,4 +88,7 @@ jobs:
           
           docker push "$IMAGE_DH:$COMMIT_TAG"
           docker push "$IMAGE_DH:latest"
-          
+
+      - name: Disparar despliegue en Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
